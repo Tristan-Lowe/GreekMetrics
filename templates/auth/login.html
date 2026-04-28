@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Login — GreekMetrics{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height:70vh">
+  <div class="card gm-card" style="width:100%;max-width:400px">
+    <div class="card-body p-4">
+      <div class="text-center mb-4">
+        <span style="font-size:2rem">⬡</span>
+        <h2 class="mt-2 mb-0" style="color:var(--gm-primary)">GreekMetrics</h2>
+        <p class="text-muted small mt-1">Chapter Performance Analytics</p>
+      </div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert alert-danger py-2">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+      <form method="POST" action="/login">
+        <div class="mb-3">
+          <label class="form-label text-muted small">PASSWORD</label>
+          <input type="password" name="password" class="form-control gm-input"
+                 placeholder="Enter chapter password" autofocus required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100" style="background:var(--gm-primary);border:none">
+          Sign In
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
