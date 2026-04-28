@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}History — GreekMetrics{% endblock %}
+{% block content %}
+<h4 class="mb-4">Evaluation History</h4>
+
+{% if not cycle_data %}
+<div class="alert alert-gm">No evaluations yet. <a href="{{ url_for('admin.evaluate') }}" style="color:var(--gm-primary)">Start one.</a></div>
+{% else %}
+<div class="gm-card">
+  <table class="table gm-table mb-0">
+    <thead>
+      <tr><th>Cycle Name</th><th>Date</th><th>Officers Scored</th><th>Chapter Avg</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for row in cycle_data %}
+      <tr>
+        <td><strong>{{ row.cycle.name }}</strong></td>
+        <td class="text-muted small">{{ row.cycle.created_at.strftime('%b %d, %Y') }}</td>
+        <td>{{ row.count }}</td>
+        <td>
+          {% if row.avg %}
+            <span class="score-badge {% if row.avg >= 80 %}score-green{% elif row.avg >= 65 %}score-yellow{% else %}score-red{% endif %}">
+              {{ row.avg }}
+            </span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          <a href="{{ url_for('admin.history_detail', cycle_id=row.cycle.id) }}"
+             class="btn btn-sm btn-outline-secondary" style="font-size:.75rem;color:var(--gm-muted);border-color:var(--gm-border)">
+            View Results →
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

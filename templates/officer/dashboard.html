@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard — GreekMetrics{% endblock %}
+{% block content %}
+<h4 class="mb-4">{{ officer.name }} — {{ officer.position }}</h4>
+
+{% if not latest %}
+<div class="alert-gm p-3 rounded">No evaluations recorded yet. Check back after your VP runs an evaluation cycle.</div>
+{% else %}
+
+<!-- Score + rank -->
+<div class="row g-3 mb-4">
+  <div class="col-md-8">
+    <div class="gm-stat-card text-start p-4">
+      <div class="section-label mb-1">{{ latest.cycle.name }}</div>
+      <div style="font-size:3rem;font-weight:700;color:{{ score_hex(latest.weighted_total) }};line-height:1">
+        {{ latest.weighted_total }}
+        <span style="font-size:1.2rem;color:var(--gm-muted)">/ 100</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="gm-stat-card">
+      <div class="section-label">Chapter Rank</div>
+      <div class="stat-value" style="color:var(--gm-primary)">#{{ rank }}</div>
+      <div style="font-size:.75rem;color:var(--gm-muted)">of {{ total_officers }} officers</div>
+    </div>
+  </div>
+</div>
+
+<!-- Dimension breakdown -->
+<div class="gm-card p-3 mb-4">
+  <div class="section-label mb-3">Dimension Breakdown</div>
+  <div class="row g-3">
+    {% for dim, avg, color, label in [
+      ('creativity', latest.creativity_avg, 'var(--gm-primary)', 'Ideas, initiatives, variety'),
+      ('execution', latest.execution_avg, 'var(--gm-green)', 'Tasks, events, follow-through'),
+      ('communication', latest.communication_avg, 'var(--gm-yellow)', 'Attendance, updates, clarity')
+    ] %}
+    <div class="col-md-4">
+      <div class="d-flex justify-content-between mb-1">
+        <span class="small" style="color:{{ color }}">{{ dim|capitalize }}</span>
+        <span class="small" style="color:{{ color }}">{{ avg }} / 10</span>
+      </div>
+      <div class="gm-progress-bar-track">
+        <div class="gm-progress-bar-fill" style="background:{{ color }};width:{{ (avg / 10 * 100)|round }}%"></div>
+      </div>
+      <div style="font-size:.72rem;color:var(--gm-muted);margin-top:4px">{{ label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- History + Notes -->
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="gm-card p-3">
+      <div class="section-label mb-2">Score History</div>
+      <div style="height:140px">
+        <canvas id="historyChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="gm-card p-3 h-100">
+      <div class="section-label mb-2">VP Notes — {{ latest.cycle.name }}</div>
+      {% if latest.officer_notes %}
+      <p class="small" style="color:var(--gm-muted);font-style:italic;line-height:1.6">"{{ latest.officer_notes }}"</p>
+      {% else %}
+      <p class="text-muted small">No notes for this cycle.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if history %}
+<script>
+const histLabels = {{ history|map(attribute=0)|list|tojson }};
+const histData   = {{ history|map(attribute=1)|list|tojson }};
+renderLineChart('historyChart', histLabels, histData);
+</script>
+{% endif %}
+{% endblock %}

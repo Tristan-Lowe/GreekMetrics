@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — GreekMetrics{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0">Chapter Overview
+    {% if latest_cycle %}
+    <span class="text-muted small ms-2">{{ latest_cycle.name }}</span>
+    {% endif %}
+  </h4>
+</div>
+
+<!-- Stat cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="gm-stat-card">
+      <div class="stat-value">{{ officers_count }}</div>
+      <div class="stat-label">Active Officers</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="gm-stat-card">
+      <div class="stat-value" style="color:var(--gm-primary)">{{ chapter_avg or '—' }}</div>
+      <div class="stat-label">Chapter Avg Score</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="gm-stat-card">
+      <div class="stat-value" style="color:var(--gm-green)">{{ cycles_count }}</div>
+      <div class="stat-label">Cycles Complete</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <a href="{{ url_for('admin.evaluate') }}" class="text-decoration-none">
+      <div class="gm-stat-card" style="background:var(--gm-primary);border-color:var(--gm-primary);cursor:pointer">
+        <div class="stat-value" style="color:#fff;font-size:1rem;margin-top:.4rem">+ New Evaluation</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Charts row -->
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="gm-card p-3">
+      <div class="section-label mb-3">Dimension Averages</div>
+      {% for dim, color in [('creativity','var(--gm-primary)'),('execution','var(--gm-green)'),('communication','var(--gm-yellow)')] %}
+      <div class="mb-3">
+        <div class="d-flex justify-content-between mb-1">
+          <span class="small" style="color:{{ color }}">{{ dim|capitalize }}</span>
+          <span class="small" style="color:{{ color }}">{{ dim_avgs[dim] }}</span>
+        </div>
+        <div class="gm-progress-bar-track">
+          <div class="gm-progress-bar-fill" style="background:{{ color }};width:{{ (dim_avgs[dim] / 10 * 100)|round }}%"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="gm-card p-3">
+      <div class="section-label mb-2">Score Distribution</div>
+      <div style="height:140px">
+        <canvas id="distChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Officer table -->
+<div class="gm-card">
+  <div class="d-flex justify-content-between align-items-center p-3" style="border-bottom:1px solid var(--gm-border)">
+    <span class="section-label mb-0">All Officers</span>
+    <input type="text" id="officerSearch" class="form-control gm-input" style="width:200px;font-size:.85rem"
+           placeholder="Search officers..." oninput="filterTable(this.value)">
+  </div>
+  <table class="table gm-table mb-0" id="officerTable">
+    <thead>
+      <tr>
+        <th>Name</th><th>Position</th>
+        <th style="color:var(--gm-primary)">Creativity</th>
+        <th style="color:var(--gm-green)">Execution</th>
+        <th style="color:var(--gm-yellow)">Comm.</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in latest_scores %}
+      <tr>
+        <td>{{ row.officer.name }}</td>
+        <td class="text-muted">{{ row.officer.position }}</td>
+        {% if row.score %}
+          <td style="color:var(--gm-primary)">{{ row.score.creativity_avg }}</td>
+          <td style="color:var(--gm-green)">{{ row.score.execution_avg }}</td>
+          <td style="color:var(--gm-yellow)">{{ row.score.communication_avg }}</td>
+          <td>
+            {% set t = row.score.weighted_total %}
+            <span class="score-badge {% if t >= 80 %}score-green{% elif t >= 65 %}score-yellow{% else %}score-red{% endif %}">
+              {{ t }}
+            </span>
+          </td>
+        {% else %}
+          <td colspan="4" class="text-muted small">No evaluation yet</td>
+        {% endif %}
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="text-center text-muted py-4">No officers found. <a href="{{ url_for('admin.officers') }}" style="color:var(--gm-primary)">Add officers.</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const distData = {{ distribution.values()|list|tojson }};
+const distLabels = {{ distribution.keys()|list|tojson }};
+renderBarChart('distChart', distLabels, distData,
+  ['#f87171','#facc15','#4ade80','#4ade80','#7c8cf8']);
+
+function filterTable(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('#officerTable tbody tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

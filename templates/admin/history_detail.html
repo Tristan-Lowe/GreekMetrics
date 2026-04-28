@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}{{ cycle.name }} — GreekMetrics{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="{{ url_for('admin.history') }}" style="color:var(--gm-muted)">← History</a>
+  <h4 class="mb-0">{{ cycle.name }}</h4>
+  <span class="text-muted small">{{ cycle.created_at.strftime('%B %d, %Y') }}</span>
+</div>
+
+{% if cycle.notes %}
+<div class="alert-gm p-3 mb-4 rounded">{{ cycle.notes }}</div>
+{% endif %}
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="gm-stat-card">
+      <div class="stat-value">{{ scores|length }}</div>
+      <div class="stat-label">Officers Scored</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="gm-stat-card">
+      <div class="stat-value" style="color:var(--gm-primary)">{{ chapter_avg or '—' }}</div>
+      <div class="stat-label">Chapter Average</div>
+    </div>
+  </div>
+</div>
+
+<div class="gm-card">
+  <table class="table gm-table mb-0">
+    <thead>
+      <tr>
+        <th>#</th><th>Name</th><th>Position</th>
+        <th style="color:var(--gm-primary)">Creativity</th>
+        <th style="color:var(--gm-green)">Execution</th>
+        <th style="color:var(--gm-yellow)">Comm.</th>
+        <th>Total</th><th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for score in scores %}
+      <tr>
+        <td class="text-muted">{{ loop.index }}</td>
+        <td><strong>{{ score.officer.name }}</strong></td>
+        <td class="text-muted small">{{ score.officer.position }}</td>
+        <td style="color:var(--gm-primary)">{{ score.creativity_avg }}</td>
+        <td style="color:var(--gm-green)">{{ score.execution_avg }}</td>
+        <td style="color:var(--gm-yellow)">{{ score.communication_avg }}</td>
+        <td>
+          {% set t = score.weighted_total %}
+          <span class="score-badge {% if t >= 80 %}score-green{% elif t >= 65 %}score-yellow{% else %}score-red{% endif %}">{{ t }}</span>
+        </td>
+        <td class="text-muted small" style="max-width:200px">{{ score.officer_notes or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

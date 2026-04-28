@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}New Evaluation — GreekMetrics{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0">New Evaluation</h4>
+  <span class="text-muted small">{{ officers|length }} active officer(s)</span>
+</div>
+
+{% if not officers %}
+<div class="alert alert-gm">No active officers found. <a href="{{ url_for('admin.officers') }}" style="color:var(--gm-primary)">Add officers first.</a></div>
+{% else %}
+<form method="POST" action="/admin/evaluate">
+  <div class="gm-card p-3 mb-4">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label section-label">Cycle Name *</label>
+        <input name="cycle_name" class="form-control gm-input" placeholder="e.g. Fall 2025 Mid-Semester" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label section-label">Cycle Notes (optional)</label>
+        <input name="cycle_notes" class="form-control gm-input" placeholder="Any notes on this evaluation period">
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion" id="officerAccordion">
+    {% for officer in officers %}
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button"
+                data-bs-toggle="collapse" data-bs-target="#officer{{ officer.id }}">
+          <strong>{{ officer.name }}</strong>
+          <span class="text-muted ms-2 small">{{ officer.position }}</span>
+        </button>
+      </h2>
+      <div id="officer{{ officer.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}">
+        <div class="accordion-body">
+
+          {% set prefix = 'officer_' ~ officer.id ~ '_' %}
+
+          <div class="mb-4">
+            <div class="section-label mb-3" style="color:var(--gm-primary)">Creativity (33%)</div>
+            {% for key, label in [
+              ('creativity_ideas', 'New event ideas submitted'),
+              ('creativity_initiatives', 'New initiatives proposed'),
+              ('creativity_content', 'Creative content created'),
+              ('creativity_innovation', 'Engagement with innovation'),
+              ('creativity_variety', 'Variety in approach to duties')
+            ] %}
+            <div class="row align-items-center mb-2">
+              <div class="col-5 small text-muted">{{ label }}</div>
+              <div class="col-5">
+                <input type="range" class="gm-slider" id="{{ prefix }}{{ key }}"
+                       name="{{ prefix }}{{ key }}" min="1" max="10" value="5">
+              </div>
+              <div class="col-2 text-center" style="color:var(--gm-primary);font-weight:700">
+                <span id="{{ prefix }}{{ key }}_display">5</span>/10
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-4">
+            <div class="section-label mb-3" style="color:var(--gm-green)">Execution (34%)</div>
+            {% for key, label in [
+              ('execution_timeliness', 'Tasks completed on time'),
+              ('execution_events', 'Events run successfully'),
+              ('execution_attendance', 'Attendance driven'),
+              ('execution_budget', 'Budget adherence'),
+              ('execution_followthrough', 'Follow-through on commitments')
+            ] %}
+            <div class="row align-items-center mb-2">
+              <div class="col-5 small text-muted">{{ label }}</div>
+              <div class="col-5">
+                <input type="range" class="gm-slider" id="{{ prefix }}{{ key }}"
+                       name="{{ prefix }}{{ key }}" min="1" max="10" value="5">
+              </div>
+              <div class="col-2 text-center" style="color:var(--gm-green);font-weight:700">
+                <span id="{{ prefix }}{{ key }}_display">5</span>/10
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-4">
+            <div class="section-label mb-3" style="color:var(--gm-yellow)">Communication (33%)</div>
+            {% for key, label in [
+              ('communication_meetings', 'Meeting attendance'),
+              ('communication_responsiveness', 'Response time to messages'),
+              ('communication_updates', 'Updates posted / reported'),
+              ('communication_clarity', 'Clarity of communications'),
+              ('communication_collaboration', 'Collaboration quality')
+            ] %}
+            <div class="row align-items-center mb-2">
+              <div class="col-5 small text-muted">{{ label }}</div>
+              <div class="col-5">
+                <input type="range" class="gm-slider" id="{{ prefix }}{{ key }}"
+                       name="{{ prefix }}{{ key }}" min="1" max="10" value="5">
+              </div>
+              <div class="col-2 text-center" style="color:var(--gm-yellow);font-weight:700">
+                <span id="{{ prefix }}{{ key }}_display">5</span>/10
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div>
+            <label class="form-label section-label">VP Notes for {{ officer.name }}</label>
+            <textarea name="{{ prefix }}notes" class="form-control gm-input" rows="2"
+                      placeholder="Optional feedback for this officer"></textarea>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="mt-4 text-end">
+    <button type="submit" class="btn btn-gm-primary px-5">Submit Evaluation</button>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

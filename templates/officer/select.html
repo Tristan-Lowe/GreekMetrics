@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Who Are You? — GreekMetrics{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height:70vh">
+  <div class="gm-card p-4" style="width:100%;max-width:400px">
+    <h5 class="mb-1">Welcome to GreekMetrics</h5>
+    <p class="text-muted small mb-4">Select your name to view your performance dashboard.</p>
+    <form method="POST" action="/officer/select">
+      <div class="mb-3">
+        <label class="form-label section-label">I am...</label>
+        <select name="officer_id" class="form-select gm-input" required>
+          <option value="" disabled selected>Select your name</option>
+          {% for officer in officers %}
+          <option value="{{ officer.id }}">{{ officer.name }} — {{ officer.position }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% if not officers %}
+      <p class="text-muted small">No officers have been added yet.</p>
+      {% else %}
+      <button type="submit" class="btn btn-gm-primary w-100">View My Dashboard</button>
+      {% endif %}
+    </form>
+  </div>
+</div>
+{% endblock %}
